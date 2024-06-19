@@ -72,11 +72,11 @@ def main():
     # Botões para salvar e carregar dados
     with st.sidebar:
         fh.save_data_as()
+        fh.download_data()
 
         uploaded_file = st.file_uploader("Carregar Dados", type=["parquet"])
         if uploaded_file is not None:
             fh.load_data(uploaded_file)
-            st.success("Dados carregados com sucesso")
 
     # Use tabs for navigation
     tab1, tab2, tab3, tab4 = st.tabs(
