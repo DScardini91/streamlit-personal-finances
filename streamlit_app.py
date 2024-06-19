@@ -44,7 +44,7 @@ st.markdown(
         font-size: 14px !important;
     }
     .stTextInput>div>div input {
-        background-color: #161b22 !important;
+        background-color: #161b22 ! important;
         color: #c9d1d9 !important;
         font-size: 14px !important;
     }
@@ -65,15 +65,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 def main():
     st.title("Aplicação de Finanças Pessoais")
 
     # Botões para salvar e carregar dados
     with st.sidebar:
-        if st.button("Salvar Dados"):
-            file_name = st.text_input("Nome do arquivo para salvar", value="dados.parquet")
-            if file_name:
-                fh.save_data(file_name)
+        fh.save_data_as()
 
         uploaded_file = st.file_uploader("Carregar Dados", type=["parquet"])
         if uploaded_file is not None:
@@ -81,25 +79,23 @@ def main():
             st.success("Dados carregados com sucesso")
 
     # Use tabs for navigation
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "Home", "Adicionar transação comum", "Adicionar transação recorrente", "Dashboard", "Visualização dos dados"
-    ])
-    
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Home", "Adicionar transação", "Dashboard", "Visualização dos dados"]
+    )
+
     with tab1:
         st.subheader("Home")
         st.write("Bem-vindo à Aplicação de Finanças Pessoais.")
-    
+
     with tab2:
         me.manual_entry()
-    
+
     with tab3:
-        me.recurring_entry()
-    
-    with tab4:
         dv.show_dashboard()
-    
-    with tab5:
+
+    with tab4:
         dv.view_data()
+
 
 if __name__ == "__main__":
     main()
