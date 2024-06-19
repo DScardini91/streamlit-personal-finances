@@ -1,0 +1,17 @@
+{
+    "tipo_options": ["Gasto", "Receita"],
+    "categoria_options": {
+        "Gasto": ["Custos fixos", "Prazeres", "Conforto", "Conhecimento", "Liberdade Financeira", "Dízimo", "Reembolsável"],
+        "Receita": ["Salário Daniel", "Salário Larissa", "Reembolso Janta", "Reembolso Plano", "Bônus"]
+    },
+    "classe_options": {
+        "Custos fixos": ["Material Escolar", "Mensalidade Creche Isaque", "Ração", "Vacina", "Medicamento", "Tarifas bancárias", "Supermercado", "Aluguel / Condomínio / IPTU", "Energia Elétrica", "Internet", "Manutenção", "Condomínio", "Financiamento APTO", "Celular", "Cabelereiro / Barbeiro", "Combustível", "Estacionamento", "IPVA", "Lavagem", "Licenciamento", "Multa", "Ônibus / Metrô", "Outros", "Pedágio", "Seguro", "Taxi / Uber", "Consultas médicas", "Consultas odontológicas", "Farmácia", "Fraldas", "Vacinas", "Alimentação Trabalho Daniel", "Padaria"],
+        "Prazeres": ["Passeios", "Restaurantes / Cafeterias", "Esporte", "Cinema / Teatro"],
+        "Conforto": ["Streaming (Netflix / Amazon / Disney)", "Auxiliar doméstica", "Manicure", "Lavanderia", "Alimentação Trabalho Larissa"],
+        "Conhecimento": ["Cursos", "Livros", "Palestras / Workshops", "Brinquedos educativos"],
+        "Liberdade Financeira": ["Investimento"],
+        "Dízimo": ["Dízimo", "Oferta"],
+        "Reembolsável": ["Saúde", "Alimentação", "Combustível", "Estacionamento", "Cursos / Livros"]
+    }
+}
+
