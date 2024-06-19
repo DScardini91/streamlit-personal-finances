@@ -40,7 +40,7 @@ def view_data():
 
     # Configuração do DataFrame editável com dropdowns
     edited_df = st.data_editor(
-        df.drop(columns=["Inclusão", "Subclasse"]),
+        df.drop(columns=["Inclusão"]),
         num_rows="dynamic",
         column_config={
             "Tipo": {"options": options["tipo_options"]},
