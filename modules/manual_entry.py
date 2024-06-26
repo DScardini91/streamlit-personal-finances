@@ -23,6 +23,7 @@ def initialize_df():
                 "Tipo",
                 "Categoria",
                 "Classe",
+                "Origem",
                 "Descrição",
                 "Valor",
                 "Observação",
@@ -40,10 +41,11 @@ def initialize_inputs():
             "tipo": "Gasto",
             "categoria": "Custos fixos",
             "classe": "",
+            "origem": "",
             "descricao": "",
             "valor": 0.00,
             "observacao": "",
-            "data_transacao": datetime.today(),
+            "data_transacao": datetime.today().date(),
             "realizado": False,
             "recorrente": False,
             "periodicidade": 1,
@@ -60,6 +62,7 @@ def manual_entry():
     tipos = options["tipo_options"]
     categorias = options["categoria_options"].get(st.session_state.inputs["tipo"], [])
     classes = options["classe_options"].get(st.session_state.inputs["categoria"], [])
+    origens = options["origem_options"].get(st.session_state.inputs["tipo"], [])
 
     col1, col2 = st.columns(2)
 
@@ -91,6 +94,16 @@ def manual_entry():
                 else 0
             ),
         )
+        origens = options["origem_options"].get(st.session_state.inputs["tipo"], [])
+        st.session_state.inputs["origem"] = st.selectbox(
+            "Origem",
+            origens,
+            index=(
+                origens.index(st.session_state.inputs["origem"])
+                if st.session_state.inputs["origem"] in origens
+                else 0
+            ),
+        )
 
         st.session_state.inputs["descricao"] = st.text_input(
             "Descrição", st.session_state.inputs["descricao"]
@@ -99,7 +112,8 @@ def manual_entry():
             "Valor (R$)",
             min_value=0.00,
             format="%.2f",
-            value=st.session_state.inputs["valor"],
+            value=float(st.session_state.inputs["valor"]),
+            step=0.01,
         )
         st.session_state.inputs["observacao"] = st.text_input(
             "Observação", st.session_state.inputs["observacao"]
@@ -129,10 +143,11 @@ def manual_entry():
                 value=st.session_state.inputs["duracao"],
             )
 
-        confirm_button = st.button(label="✅ Confirmar")
-        correct_button = st.button(label="🧽 Corrigir")
+    confirm_button = st.button(label="✅ Confirmar")
+    correct_button = st.button(label="🧽 Corrigir")
 
     if confirm_button:
+        valor = st.session_state.inputs["valor"]
         data_hora_inclusao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         if st.session_state.inputs["recorrente"]:
             for i in range(
@@ -149,8 +164,9 @@ def manual_entry():
                         "Tipo": [st.session_state.inputs["tipo"]],
                         "Categoria": [st.session_state.inputs["categoria"]],
                         "Classe": [st.session_state.inputs["classe"]],
+                        "Origem": [st.session_state.inputs["origem"]],
                         "Descrição": [st.session_state.inputs["descricao"]],
-                        "Valor": [st.session_state.inputs["valor"]],
+                        "Valor": [valor],
                         "Observação": [st.session_state.inputs["observacao"]],
                         "Data": [data_transacao.strftime("%d/%m/%Y")],
                         "MesAno": [mes_ano],
@@ -164,18 +180,18 @@ def manual_entry():
                     [st.session_state.df, new_transaction], ignore_index=True
                 )
         else:
-            mes_ano = st.session_state.inputs["data_transacao"].strftime("%m/%Y")
+            data_transacao = st.session_state.inputs["data_transacao"]
+            mes_ano = data_transacao.strftime("%m/%Y")
             new_transaction = pd.DataFrame(
                 {
                     "Tipo": [st.session_state.inputs["tipo"]],
                     "Categoria": [st.session_state.inputs["categoria"]],
                     "Classe": [st.session_state.inputs["classe"]],
+                    "Origem": [st.session_state.inputs["origem"]],
                     "Descrição": [st.session_state.inputs["descricao"]],
-                    "Valor": [st.session_state.inputs["valor"]],
+                    "Valor": [valor],
                     "Observação": [st.session_state.inputs["observacao"]],
-                    "Data": [
-                        st.session_state.inputs["data_transacao"].strftime("%d/%m/%Y")
-                    ],
+                    "Data": [data_transacao.strftime("%d/%m/%Y")],
                     "MesAno": [mes_ano],
                     "Inclusão": [data_hora_inclusao],
                     "Realizado": [st.session_state.inputs["realizado"]],
@@ -186,7 +202,7 @@ def manual_entry():
             )
 
         st.success(
-            f"Adicionado: {st.session_state.inputs['descricao']} de valor R${st.session_state.inputs['valor']:.2f} como {st.session_state.inputs['tipo']} em {st.session_state.inputs['data_transacao'].strftime('%d/%m/%Y')}"
+            f"Adicionado: {st.session_state.inputs['descricao']} de valor R$ {valor:.2f} como {st.session_state.inputs['tipo']} em {data_transacao.strftime('%d/%m/%Y')}"
         )
 
     if correct_button:
@@ -202,3 +218,7 @@ def manual_entry():
             st.dataframe(
                 st.session_state.df.drop(columns=["Inclusão"]).reset_index(drop=True)
             )
+
+
+if __name__ == "__main__":
+    manual_entry()
