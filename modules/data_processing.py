@@ -55,7 +55,7 @@ def calculate_card_statements(df, card_data):
 
 
 def calculate_balance(df, start_date, end_date):
-    df["Data"] = pd.to_datetime(df["Data"]).dt.date
+    df["Data"] = pd.to_datetime(df["Data"], dayfirst=True).dt.date
     today = datetime.today().date()
     card_data = load_card_data()
 
@@ -80,7 +80,6 @@ def calculate_balance(df, start_date, end_date):
         ]
     )
 
-    # Remover transações antigas de pagamento de faturas
     df = df[
         ~(
             (df["Descrição"].str.startswith("Pagamento de Fatura "))
@@ -89,51 +88,40 @@ def calculate_balance(df, start_date, end_date):
         )
     ]
 
-    # Adicionar as novas transações de pagamento de faturas
     df = pd.concat([df, statement_transactions], ignore_index=True)
 
-    # Manter gastos negativos e receitas positivas
     df["Valor"] = df.apply(
         lambda x: -abs(x["Valor"]) if x["Tipo"] == "Gasto" else abs(x["Valor"]), axis=1
     )
 
-    # Filtrar as transações para incluir apenas as realizadas em datas passadas e futuras
     df_past = df[(df["Data"] <= today) & (df["Realizado"] == True)]
     df_future = df[(df["Data"] > today) & (df["Origem"] == "Conta Corrente")]
 
-    # Concatenar os dataframes filtrados
     df_filtered = pd.concat([df_past, df_future])
 
-    # Gerar um DataFrame com todas as datas no intervalo
     dates = pd.date_range(start=start_date, end=end_date, freq="D").date
     balance_df = pd.DataFrame(dates, columns=["Data"])
 
-    # Ordenar o DataFrame pela data
     df_filtered = df_filtered.sort_values(by="Data")
 
-    # Agrupar por data e calcular o valor total das transações de cada dia
     daily_transactions = (
         df_filtered.groupby("Data")["Valor"]
         .sum()
         .reset_index(name="Valor Previsto de Transações")
     )
 
-    saldo_inicial = 0
-    balance_df["Saldo Inicial"] = saldo_inicial
-    balance_df["Valor Previsto de Transações"] = 0.00
-    balance_df["Saldo Previsto"] = saldo_inicial
+    balance_df = balance_df.merge(daily_transactions, on="Data", how="left").fillna(0)
 
-    balance_df.set_index("Data", inplace=True)
-    balance_df.update(daily_transactions.set_index("Data"))
-    balance_df = balance_df.fillna(0)
+    balance_df["Saldo Inicial"] = 0
+    saldo_previsto = 0
+    for i in range(len(balance_df)):
+        balance_df.at[i, "Saldo Inicial"] = saldo_previsto
+        saldo_previsto = (
+            balance_df.at[i, "Saldo Inicial"]
+            + balance_df.at[i, "Valor Previsto de Transações"]
+        )
+        balance_df.at[i, "Saldo Previsto"] = saldo_previsto
 
-    balance_df["Saldo Previsto"] = (
-        saldo_inicial + balance_df["Valor Previsto de Transações"].cumsum()
-    )
-    balance_df["Data"] = balance_df.index.map(lambda x: x.strftime("%d/%m/%Y"))
+    balance_df["Data"] = balance_df["Data"].map(lambda x: x.strftime("%d/%m/%Y"))
 
     return balance_df.reset_index(drop=True), card_statements
-
-
-if __name__ == "__main__":
-    calculate_balance()

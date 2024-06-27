@@ -11,7 +11,7 @@ def load_balance():
     else:
         if "df" in st.session_state and not st.session_state.df.empty:
             balance_df, _ = calculate_balance(
-                st.session_state.df, "01/06/2024", "31/12/2025"
+                st.session_state.df, "06/01/2024", "31/12/2024"
             )
             st.session_state.balance_df = balance_df
             return balance_df
