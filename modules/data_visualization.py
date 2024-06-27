@@ -93,7 +93,7 @@ def view_data():
     st.dataframe(df)
 
 
-def view_balance():
+def view_balance(key=""):
     st.subheader("Balanço Financeiro dos Dias")
 
     if "df" not in st.session_state or st.session_state.df.empty:
@@ -103,6 +103,34 @@ def view_balance():
     balance_df, card_statements = calculate_balance(
         st.session_state.df, "06/01/2024", "12/31/2024"
     )
+
+    # Adicionando filtros de mês e ano
+    balance_df["MesAno"] = pd.to_datetime(
+        balance_df["Data"], format="%d/%m/%Y"
+    ).dt.strftime("%m/%Y")
+    meses = balance_df["MesAno"].apply(lambda x: x.split("/")[0]).unique()
+    anos = balance_df["MesAno"].apply(lambda x: x.split("/")[1]).unique()
+    mes_selecionado = st.multiselect(
+        "Selecione o Mês",
+        meses,
+        default=[f"{datetime.now().month:02d}"],
+        key="balance_mes_selecionado" + key,
+    )
+    ano_selecionado = st.multiselect(
+        "Selecione o Ano",
+        anos,
+        default=[str(datetime.now().year)],
+        key="balance_ano_selecionado" + key,
+    )
+
+    if mes_selecionado and ano_selecionado:
+        filtro_mes = balance_df["MesAno"].apply(
+            lambda x: x.split("/")[0] in mes_selecionado
+        )
+        filtro_ano = balance_df["MesAno"].apply(
+            lambda x: x.split("/")[1] in ano_selecionado
+        )
+        balance_df = balance_df[filtro_mes & filtro_ano]
 
     styled_balance_df = apply_balance_styles(balance_df)
 
@@ -158,7 +186,7 @@ def edit_balance():
                             "Valor": abs(ajuste_valor),
                             "Observação": "",
                             "Data": data_to_edit_str,
-                            "MesAno": data_to_edit.strftime("%Y/%m"),
+                            "MesAno": data_to_edit.strftime("%m/%Y"),
                             "Inclusão": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                             "Realizado": True,
                         }
@@ -192,7 +220,7 @@ def edit_balance():
                 st.error("Data não encontrada no balanço financeiro.")
 
     st.write("Balanço Financeiro Atualizado:")
-    st.dataframe(balance_df)
+    view_balance(key="_edit")
 
 
 def show_dashboard():

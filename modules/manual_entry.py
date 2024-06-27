@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import json
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
 
@@ -45,12 +45,22 @@ def initialize_inputs():
             "descricao": "",
             "valor": 0.00,
             "observacao": "",
-            "data_transacao": datetime.today().date(),
+            "data_transacao": datetime.today().date().strftime("%Y-%m-%d"),
             "realizado": False,
             "recorrente": False,
             "periodicidade": 1,
             "duracao": 1,
         }
+
+
+def parse_date(date_str):
+    if isinstance(date_str, str):
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    return date_str
+
+
+def format_date(date_obj):
+    return date_obj.strftime("%d/%m/%Y")
 
 
 def manual_entry():
@@ -119,7 +129,9 @@ def manual_entry():
             "Observação", st.session_state.inputs["observacao"]
         )
         st.session_state.inputs["data_transacao"] = st.date_input(
-            "Data da Transação", value=st.session_state.inputs["data_transacao"]
+            "Data da Transação",
+            value=parse_date(st.session_state.inputs["data_transacao"]),
+            format="YYYY-MM-DD",
         )
         st.session_state.inputs["realizado"] = st.checkbox(
             "Realizado", value=st.session_state.inputs.get("realizado", False)
@@ -149,6 +161,7 @@ def manual_entry():
     if confirm_button:
         valor = st.session_state.inputs["valor"]
         data_hora_inclusao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
         if st.session_state.inputs["recorrente"]:
             for i in range(
                 0,
