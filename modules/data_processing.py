@@ -4,10 +4,14 @@ import os
 
 
 def load_card_data():
-    if os.path.exists("cards.parquet"):
-        return pd.read_parquet("cards.parquet")
-    else:
-        return pd.DataFrame(columns=["Cartão", "Dia de Pagamento", "Dia de Fechamento"])
+    # Configuração constante dos cartões
+    return pd.DataFrame(
+        {
+            "Cartão": ["Elo", "Mastercard", "Visa"],
+            "Dia de Pagamento": [25, 25, 11],
+            "Dia de Fechamento": [12, 12, 27],
+        }
+    )
 
 
 def calculate_card_statements(df, card_data):
@@ -33,9 +37,17 @@ def calculate_card_statements(df, card_data):
             )
         )
 
-        card_transactions["Pagamento"] = card_transactions[
-            "Fechamento"
-        ] + pd.DateOffset(days=(payment_day - closing_day))
+        card_transactions["Pagamento"] = card_transactions["Fechamento"].apply(
+            lambda x: (
+                (x + pd.DateOffset(months=1)).replace(day=payment_day)
+                if card_name == "Visa"
+                else (
+                    x.replace(day=payment_day)
+                    if x.day <= payment_day
+                    else (x + pd.DateOffset(months=1)).replace(day=payment_day)
+                )
+            )
+        )
 
         grouped = card_transactions.groupby(["Fechamento", "Pagamento"])
 
@@ -55,7 +67,7 @@ def calculate_card_statements(df, card_data):
 
 
 def calculate_balance(df, start_date, end_date):
-    df["Data"] = pd.to_datetime(df["Data"], dayfirst=True).dt.date
+    df["Data"] = pd.to_datetime(df["Data"], format="%d/%m/%Y").dt.date
     today = datetime.today().date()
     card_data = load_card_data()
 
@@ -71,7 +83,7 @@ def calculate_balance(df, start_date, end_date):
                 "Descrição": f'Pagamento de Fatura {statement["Cartão"]}',
                 "Valor": statement["Total"],
                 "Observação": "",
-                "Data": statement["Pagamento"].date(),
+                "Data": statement["Pagamento"].strftime("%d/%m/%Y"),
                 "MesAno": statement["Pagamento"].strftime("%Y/%m"),
                 "Inclusão": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                 "Realizado": False,
@@ -90,6 +102,9 @@ def calculate_balance(df, start_date, end_date):
 
     df = pd.concat([df, statement_transactions], ignore_index=True)
 
+    df["Data"] = pd.to_datetime(
+        df["Data"], format="%d/%m/%Y"
+    ).dt.date  # Garantir que todas as datas estejam no formato datetime.date
     df["Valor"] = df.apply(
         lambda x: -abs(x["Valor"]) if x["Tipo"] == "Gasto" else abs(x["Valor"]), axis=1
     )
