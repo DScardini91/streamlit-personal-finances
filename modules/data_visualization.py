@@ -36,9 +36,9 @@ def apply_balance_styles(df):
         else:
             return ""  # Sem preenchimento para saldo zero
 
-    styled_df = df.style.applymap(
+    styled_df = df.style.map(
         color_transactions, subset=["Valor Previsto de Transações"]
-    ).applymap(color_balance, subset=["Saldo Previsto"])
+    ).map(color_balance, subset=["Saldo Previsto"])
     return styled_df
 
 
@@ -89,8 +89,20 @@ def view_data():
         )
         df = df[df["Inclusão"] > pd.to_datetime(data_inicial)]
 
-    st.write("Transações Filtradas:")
-    st.dataframe(df)
+    # Adicionando coluna booleana para selecionar linhas a serem deletadas
+    df["Deletar"] = False
+    edited_df = st.data_editor(df, key="data_editor")
+
+    # Verificando linhas marcadas para deletar
+    linhas_para_deletar = edited_df[edited_df["Deletar"]].index
+
+    # Botão para deletar linhas marcadas
+    if st.button("🗑️ Deletar Linhas Marcadas", key="delete_button"):
+        st.session_state.df = st.session_state.df.drop(
+            index=linhas_para_deletar
+        ).reset_index(drop=True)
+        st.success("Linhas marcadas foram deletadas com sucesso!")
+        st.rerun()  # Atualiza a página para refletir as mudanças
 
 
 def view_balance(key=""):
@@ -101,7 +113,7 @@ def view_balance(key=""):
         return
 
     balance_df, card_statements = calculate_balance(
-        st.session_state.df, "06/01/2024", "12/31/2024"
+        st.session_state.df, "01/06/2024", "31/12/2024"
     )
 
     # Adicionando filtros de mês e ano
@@ -131,6 +143,8 @@ def view_balance(key=""):
             lambda x: x.split("/")[1] in ano_selecionado
         )
         balance_df = balance_df[filtro_mes & filtro_ano]
+
+    # edited_df = st.data_editor(balance_df, key="balance_df_editor" + key)
 
     styled_balance_df = apply_balance_styles(balance_df)
 

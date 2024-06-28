@@ -115,7 +115,7 @@ def main():
         dv.edit_balance()
 
     with tab7:
-        cd.card_management()
+        cd.card_statements_view()
 
     with tab8:
         hy.manage_hierarchy()
