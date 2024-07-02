@@ -36,9 +36,9 @@ def apply_balance_styles(df):
         else:
             return ""  # Sem preenchimento para saldo zero
 
-    styled_df = df.style.applymap(
+    styled_df = df.style.map(
         color_transactions, subset=["Valor Previsto de Transações"]
-    ).applymap(color_balance, subset=["Saldo Previsto"])
+    ).map(color_balance, subset=["Saldo Previsto"])
     return styled_df
 
 
@@ -89,8 +89,20 @@ def view_data():
         )
         df = df[df["Inclusão"] > pd.to_datetime(data_inicial)]
 
-    st.write("Transações Filtradas:")
-    st.dataframe(df)
+    # Adicionando coluna booleana para selecionar linhas a serem deletadas
+    df["Deletar"] = False
+    edited_df = st.data_editor(df, key="data_editor")
+
+    # Verificando linhas marcadas para deletar
+    linhas_para_deletar = edited_df[edited_df["Deletar"]].index
+
+    # Botão para deletar linhas marcadas
+    if st.button("🗑️ Deletar Linhas Marcadas", key="delete_button"):
+        st.session_state.df = st.session_state.df.drop(
+            index=linhas_para_deletar
+        ).reset_index(drop=True)
+        st.success("Linhas marcadas foram deletadas com sucesso!")
+        st.rerun()  # Atualiza a página para refletir as mudanças
 
 
 def view_balance(key=""):
@@ -101,7 +113,7 @@ def view_balance(key=""):
         return
 
     balance_df, card_statements = calculate_balance(
-        st.session_state.df, "06/01/2024", "12/31/2024"
+        st.session_state.df, "01/06/2024", "31/12/2024"
     )
 
     # Adicionando filtros de mês e ano
@@ -132,6 +144,8 @@ def view_balance(key=""):
         )
         balance_df = balance_df[filtro_mes & filtro_ano]
 
+    # edited_df = st.data_editor(balance_df, key="balance_df_editor" + key)
+
     styled_balance_df = apply_balance_styles(balance_df)
 
     balance_df["Saldo Inicial"] = balance_df["Saldo Inicial"].apply(
@@ -145,22 +159,22 @@ def view_balance(key=""):
     )
 
     st.write(styled_balance_df.to_html(), unsafe_allow_html=True)
+    st.session_state.balance_df = balance_df
 
 
 def edit_balance():
     st.subheader("Editar Saldo Inicial")
 
-    # Verifique se balance_df está no estado da sessão
     if "balance_df" not in st.session_state or st.session_state.balance_df.empty:
         st.write("Nenhum dado de balanço disponível.")
         return
 
-    # Copie o balance_df para evitar manipulações diretas no estado da sessão
     balance_df = st.session_state.balance_df.copy()
 
-    # Escolha a data para alterar o saldo
     data_to_edit = st.date_input(
-        "Escolha a data para alterar o saldo", value=datetime.today()
+        "Escolha a data para alterar o saldo",
+        value=datetime.today(),
+        format="DD/MM/YYYY",
     )
     novo_saldo = st.number_input(
         "Novo Saldo Inicial (R$)", min_value=0.00, format="%.2f", step=0.01
@@ -169,11 +183,13 @@ def edit_balance():
     if data_to_edit:
         data_to_edit_str = data_to_edit.strftime("%d/%m/%Y")
         if st.button("Atualizar Saldo Inicial"):
-            # Verifique se a data escolhida está no DataFrame
             if data_to_edit_str in balance_df["Data"].values:
-                saldo_anterior = balance_df.loc[
+                saldo_anterior_str = balance_df.loc[
                     balance_df["Data"] == data_to_edit_str, "Saldo Inicial"
                 ].values[0]
+                saldo_anterior = float(
+                    saldo_anterior_str.replace("R$", "").replace(",", "")
+                )
                 ajuste_valor = novo_saldo - saldo_anterior
                 nova_transacao = pd.DataFrame(
                     [
@@ -192,23 +208,6 @@ def edit_balance():
                         }
                     ]
                 )
-                # Adicione a nova transação ao DataFrame de transações
-                if "df" not in st.session_state:
-                    st.session_state.df = pd.DataFrame(
-                        columns=[
-                            "Tipo",
-                            "Categoria",
-                            "Classe",
-                            "Origem",
-                            "Descrição",
-                            "Valor",
-                            "Observação",
-                            "Data",
-                            "MesAno",
-                            "Inclusão",
-                            "Realizado",
-                        ]
-                    )
                 st.session_state.df = pd.concat(
                     [st.session_state.df, nova_transacao], ignore_index=True
                 )
@@ -220,7 +219,7 @@ def edit_balance():
                 st.error("Data não encontrada no balanço financeiro.")
 
     st.write("Balanço Financeiro Atualizado:")
-    view_balance(key="_edit")
+    st.dataframe(balance_df)
 
 
 def show_dashboard():

@@ -11,7 +11,7 @@ def load_balance():
     else:
         if "df" in st.session_state and not st.session_state.df.empty:
             balance_df, _ = calculate_balance(
-                st.session_state.df, "06/01/2024", "31/12/2024"
+                st.session_state.df, "06/01/2024", "12/31/2024"
             )
             st.session_state.balance_df = balance_df
             return balance_df
@@ -42,7 +42,36 @@ def display_balance():
             balance_df["Data"] == today, "Valor Previsto de Transações"
         ].values[0]
 
+        # Remove qualquer símbolo de moeda e converte para float
+        saldo_atual = float(saldo_atual.replace("R$", "").replace(",", ""))
+        transacoes_hoje = float(transacoes_hoje.replace("R$", "").replace(",", ""))
+
     return saldo_atual, transacoes_hoje
+
+
+def display_monthly_summary():
+    balance_df = load_balance()
+    current_month = datetime.today().strftime("%m/%Y")
+
+    balance_df["MesAno"] = pd.to_datetime(
+        balance_df["Data"], format="%d/%m/%Y"
+    ).dt.strftime("%m/%Y")
+    monthly_df = balance_df[balance_df["MesAno"] == current_month]
+
+    # Remove qualquer símbolo de moeda e converte para float
+    saldo_inicial_mes = (
+        float(monthly_df["Saldo Inicial"].iloc[0].replace("R$", "").replace(",", ""))
+        if not monthly_df.empty
+        else 0.0
+    )
+    transacoes_mes = monthly_df["Valor Previsto de Transações"].sum()
+    saldo_final_mes = (
+        float(monthly_df["Saldo Previsto"].iloc[-1].replace("R$", "").replace(",", ""))
+        if not monthly_df.empty
+        else 0.0
+    )
+
+    return saldo_inicial_mes, transacoes_mes, saldo_final_mes
 
 
 def home():
@@ -76,6 +105,7 @@ def home():
         )
 
     saldo_atual, transacoes_hoje = display_balance()
+    saldo_inicial_mes, transacoes_mes, saldo_final_mes = display_monthly_summary()
 
     col1, col2 = st.columns([2, 1])  # Coluna 1: 66%, Coluna 2: 33%
 
@@ -90,6 +120,16 @@ def home():
             """,
             unsafe_allow_html=True,
         )
+        # Card para o saldo inicial do mês
+        st.markdown(
+            f"""
+            <div style="border: 1px solid #e1e4e8; border-radius: 6px; padding: 16px; background-color: #f8f9fa;">
+                <h4 style="color: #6c757d; margin: 0;">Saldo Inicial do Mês</h4>
+                <p style="color: {'#155724' if saldo_inicial_mes >= 0 else '#721c24'}; font-size: 24px; margin: 0;">R${saldo_inicial_mes:,.2f}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     # Card para transações previstas para hoje
     with col2:
@@ -98,6 +138,17 @@ def home():
             <div style="border: 1px solid #e1e4e8; border-radius: 6px; padding: 16px; background-color: #f8f9fa;">
                 <h4 style="color: #6c757d; margin: 0;">Transações Previstas para Hoje</h4>
                 <p style="color: {'#155724' if transacoes_hoje >= 0 else '#721c24'}; font-size: 24px; margin: 0;">R${transacoes_hoje:,.2f}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Card para o saldo previsto no fim do mês
+        st.markdown(
+            f"""
+            <div style="border: 1px solid #e1e4e8; border-radius: 6px; padding: 16px; background-color: #f8f9fa;">
+                <h4 style="color: #6c757d; margin: 0;">Saldo Previsto no Fim do Mês</h4>
+                <p style="color: {'#155724' if saldo_final_mes >= 0 else '#721c24'}; font-size: 24px; margin: 0;">R${saldo_final_mes:,.2f}</p>
             </div>
             """,
             unsafe_allow_html=True,

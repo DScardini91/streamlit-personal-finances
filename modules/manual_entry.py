@@ -35,39 +35,51 @@ def initialize_df():
         )
 
 
+# Inicializa inputs vazios
 def initialize_inputs():
-    if "inputs" not in st.session_state:
-        st.session_state.inputs = {
-            "tipo": "Gasto",
-            "categoria": "Custos fixos",
-            "classe": "",
-            "origem": "",
-            "descricao": "",
-            "valor": 0.00,
-            "observacao": "",
-            "data_transacao": datetime.today().date().strftime("%Y-%m-%d"),
-            "realizado": False,
-            "recorrente": False,
-            "periodicidade": 1,
-            "duracao": 1,
-        }
+    st.session_state.inputs = {
+        "tipo": "Gasto",
+        "categoria": "Custos Fixos",
+        "classe": " ",
+        "origem": " ",
+        "descricao": " ",
+        "valor": 0.00,
+        "observacao": " ",
+        "data_transacao": datetime.today().strftime("%d/%m/%Y"),
+        "realizado": False,
+        "recorrente": False,
+        "periodicidade": 1,
+        "duracao": 1,
+    }
 
 
 def parse_date(date_str):
-    if isinstance(date_str, str):
-        return datetime.strptime(date_str, "%Y-%m-%d").date()
-    return date_str
+    if isinstance(date_str, str) and date_str:
+        return datetime.strptime(date_str, "%d/%m/%Y").date()
+    return datetime.today().date()
 
 
 def format_date(date_obj):
-    return date_obj.strftime("%d/%m/%Y")
+    if isinstance(date_obj, date):
+        return date_obj.strftime("%d/%m/%Y")
+    return date_obj
 
 
+def ensure_date_format():
+    if "df" in st.session_state and not st.session_state.df.empty:
+        st.session_state.df["Data"] = pd.to_datetime(
+            st.session_state.df["Data"], dayfirst=True
+        ).dt.strftime("%d/%m/%Y")
+
+
+# Adicione a chamada para a função ensure_date_format onde necessário
 def manual_entry():
     st.subheader("Adicionar transação")
 
     initialize_df()
-    initialize_inputs()
+    ensure_date_format()
+    if "inputs" not in st.session_state:
+        initialize_inputs()
 
     tipos = options["tipo_options"]
     categorias = options["categoria_options"].get(st.session_state.inputs["tipo"], [])
@@ -128,10 +140,10 @@ def manual_entry():
         st.session_state.inputs["observacao"] = st.text_input(
             "Observação", st.session_state.inputs["observacao"]
         )
+        data_transacao = parse_date(st.session_state.inputs["data_transacao"])
         st.session_state.inputs["data_transacao"] = st.date_input(
             "Data da Transação",
-            value=parse_date(st.session_state.inputs["data_transacao"]),
-            format="YYYY-MM-DD",
+            value=data_transacao if data_transacao else datetime.today().date(),
         )
         st.session_state.inputs["realizado"] = st.checkbox(
             "Realizado", value=st.session_state.inputs.get("realizado", False)
@@ -156,13 +168,31 @@ def manual_entry():
             )
 
     confirm_button = st.button(label="✅ Confirmar")
-    correct_button = st.button(label="🧽 Corrigir")
+    # correct_button = st.button(label="🧽 Corrigir")
 
     if confirm_button:
         valor = st.session_state.inputs["valor"]
         data_hora_inclusao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-        if st.session_state.inputs["recorrente"]:
+        # Verificar se a transação já existe
+        transacao_existente = st.session_state.df[
+            (st.session_state.df["Tipo"] == st.session_state.inputs["tipo"])
+            & (st.session_state.df["Categoria"] == st.session_state.inputs["categoria"])
+            & (st.session_state.df["Classe"] == st.session_state.inputs["classe"])
+            & (st.session_state.df["Origem"] == st.session_state.inputs["origem"])
+            & (st.session_state.df["Descrição"] == st.session_state.inputs["descricao"])
+            & (st.session_state.df["Valor"] == float(valor))
+            & (
+                st.session_state.df["Observação"]
+                == st.session_state.inputs["observacao"]
+            )
+            & (
+                st.session_state.df["Data"]
+                == st.session_state.inputs["data_transacao"].strftime("%d/%m/%Y")
+            )
+        ]
+
+        if st.session_state.inputs["recorrente"] and transacao_existente.empty:
             for i in range(
                 0,
                 st.session_state.inputs["duracao"],
@@ -179,7 +209,7 @@ def manual_entry():
                         "Classe": [st.session_state.inputs["classe"]],
                         "Origem": [st.session_state.inputs["origem"]],
                         "Descrição": [st.session_state.inputs["descricao"]],
-                        "Valor": [valor],
+                        "Valor": [float(valor)],
                         "Observação": [st.session_state.inputs["observacao"]],
                         "Data": [data_transacao.strftime("%d/%m/%Y")],
                         "MesAno": [mes_ano],
@@ -192,7 +222,10 @@ def manual_entry():
                 st.session_state.df = pd.concat(
                     [st.session_state.df, new_transaction], ignore_index=True
                 )
-        else:
+                st.success(
+                    f"Transação recorrente adicionada com sucesso! Foram adicionadas {st.session_state.inputs['duracao'] // st.session_state.inputs['periodicidade']} recorrências, no valor total de R$ {st.session_state.inputs['valor'] * (st.session_state.inputs['duracao'] // st.session_state.inputs['periodicidade'])}"
+                )
+        elif transacao_existente.empty:
             data_transacao = st.session_state.inputs["data_transacao"]
             mes_ano = data_transacao.strftime("%m/%Y")
             new_transaction = pd.DataFrame(
@@ -202,7 +235,7 @@ def manual_entry():
                     "Classe": [st.session_state.inputs["classe"]],
                     "Origem": [st.session_state.inputs["origem"]],
                     "Descrição": [st.session_state.inputs["descricao"]],
-                    "Valor": [valor],
+                    "Valor": [float(valor)],
                     "Observação": [st.session_state.inputs["observacao"]],
                     "Data": [data_transacao.strftime("%d/%m/%Y")],
                     "MesAno": [mes_ano],
@@ -213,17 +246,21 @@ def manual_entry():
             st.session_state.df = pd.concat(
                 [st.session_state.df, new_transaction], ignore_index=True
             )
+            st.success(
+                f"Txransação adicionada com sucesso! Valor: R$ {valor}, Data: {data_transacao.strftime('%d/%m/%Y')}"
+            )
 
-        st.success(
-            f"Adicionado: {st.session_state.inputs['descricao']} de valor R$ {valor:.2f} como {st.session_state.inputs['tipo']} em {data_transacao.strftime('%d/%m/%Y')}"
-        )
+        else:
+            st.warning("Já existe uma transação idêntica lançada.")
+            print("Transação já existente. Não foi adicionada.")
 
-    if correct_button:
         initialize_inputs()
-        st.warning("Corrigir entrada. Por favor, preencha novamente os campos.")
+        ensure_date_format()
 
     with col2:
         st.write("Transações Registradas:")
+
+        ensure_date_format()
         if not st.session_state.df.empty:
             st.session_state.df = st.session_state.df.sort_values(
                 by="Inclusão", ascending=False
