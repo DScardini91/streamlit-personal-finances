@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from modules.data_processing import calculate_balance
+from modules import alerts
 
 
 # Função para carregar o balance_df
@@ -36,7 +37,7 @@ def display_balance():
         transacoes_hoje = 0.0
     else:
         saldo_atual = balance_df.loc[
-            balance_df["Data"] == today, "Saldo Previsto"
+            balance_df["Data"] == today, "Saldo Inicial"
         ].values[0]
         transacoes_hoje = balance_df.loc[
             balance_df["Data"] == today, "Valor Previsto de Transações"
@@ -153,6 +154,9 @@ def home():
             """,
             unsafe_allow_html=True,
         )
+
+        # Exibir alertas de saldo negativo
+    alerts.display_alerts()
 
 
 if __name__ == "__main__":
