@@ -4,3 +4,5 @@ __pycache__/
 data/
 venv/
 *.parquet
+dados_teste.json
+dados_teste_2.json

@@ -6,6 +6,8 @@ from modules import manual_entry as me
 from modules import cards as cd
 from modules import hierarchy as hy
 from modules import home as hm  # Importar o novo módulo home
+from modules import goals as gl  # Importar o novo módulo goals
+from modules import dashboard as ds
 
 # Configuração do tema personalizado para Streamlit
 st.set_page_config(
@@ -83,7 +85,7 @@ def main():
             st.success("Dados carregados com sucesso")
 
     # Use tabs for navigation
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs(
         [
             "Home",
             "Adicionar transação",
@@ -92,6 +94,7 @@ def main():
             "Balanço Financeiro",
             "Editar Saldo Inicial",
             "Cadastro de Cartões",
+            "Metas",
             "Gerenciar Hierarquia",
         ]
     )
@@ -103,7 +106,7 @@ def main():
         me.manual_entry()
 
     with tab3:
-        dv.show_dashboard()
+        ds.create_dashboard()
 
     with tab4:
         dv.view_data()
@@ -118,6 +121,9 @@ def main():
         cd.card_statements_view()
 
     with tab8:
+        gl.display_goals()
+
+    with tab9:
         hy.manage_hierarchy()
 
 

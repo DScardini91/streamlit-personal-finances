@@ -5,3 +5,4 @@ pyarrow
 hvplot
 panel
 streamlit-shadcn-ui
+plotly

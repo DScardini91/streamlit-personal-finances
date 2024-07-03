@@ -12,7 +12,7 @@ def load_balance():
     else:
         if "df" in st.session_state and not st.session_state.df.empty:
             balance_df, _ = calculate_balance(
-                st.session_state.df, "06/01/2024", "12/31/2024"
+                st.session_state.df, "01/06/2024", "31/12/2024"
             )
             st.session_state.balance_df = balance_df
             return balance_df
@@ -43,9 +43,11 @@ def display_balance():
             balance_df["Data"] == today, "Valor Previsto de Transações"
         ].values[0]
 
-        # Remove qualquer símbolo de moeda e converte para float
-        saldo_atual = float(saldo_atual.replace("R$", "").replace(",", ""))
-        transacoes_hoje = float(transacoes_hoje.replace("R$", "").replace(",", ""))
+        # Remove qualquer símbolo de moeda e converte para float se necessário
+        if isinstance(saldo_atual, str):
+            saldo_atual = float(saldo_atual.replace("R$", "").replace(",", ""))
+        if isinstance(transacoes_hoje, str):
+            transacoes_hoje = float(transacoes_hoje.replace("R$", "").replace(",", ""))
 
     return saldo_atual, transacoes_hoje
 
@@ -59,18 +61,24 @@ def display_monthly_summary():
     ).dt.strftime("%m/%Y")
     monthly_df = balance_df[balance_df["MesAno"] == current_month]
 
-    # Remove qualquer símbolo de moeda e converte para float
-    saldo_inicial_mes = (
-        float(monthly_df["Saldo Inicial"].iloc[0].replace("R$", "").replace(",", ""))
-        if not monthly_df.empty
-        else 0.0
-    )
+    # Remove qualquer símbolo de moeda e converte para float se necessário
+    if not monthly_df.empty:
+        saldo_inicial_mes = monthly_df["Saldo Inicial"].iloc[0]
+        if isinstance(saldo_inicial_mes, str):
+            saldo_inicial_mes = float(
+                saldo_inicial_mes.replace("R$", "").replace(",", "")
+            )
+    else:
+        saldo_inicial_mes = 0.0
+
     transacoes_mes = monthly_df["Valor Previsto de Transações"].sum()
-    saldo_final_mes = (
-        float(monthly_df["Saldo Previsto"].iloc[-1].replace("R$", "").replace(",", ""))
-        if not monthly_df.empty
-        else 0.0
-    )
+
+    if not monthly_df.empty:
+        saldo_final_mes = monthly_df["Saldo Previsto"].iloc[-1]
+        if isinstance(saldo_final_mes, str):
+            saldo_final_mes = float(saldo_final_mes.replace("R$", "").replace(",", ""))
+    else:
+        saldo_final_mes = 0.0
 
     return saldo_inicial_mes, transacoes_mes, saldo_final_mes
 
