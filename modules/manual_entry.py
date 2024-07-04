@@ -265,7 +265,6 @@ def manual_entry():
             st.session_state.df = st.session_state.df.sort_values(
                 by="Inclusão", ascending=False
             )
-            st.write(st.session_state.df.Inclusão)
             st.dataframe(
                 st.session_state.df.drop(columns=["Inclusão"]).reset_index(drop=True)
             )
