@@ -6,3 +6,4 @@ venv/
 *.parquet
 dados_teste.json
 dados_teste_2.json
+dados_save.json
