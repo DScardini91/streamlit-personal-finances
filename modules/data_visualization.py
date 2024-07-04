@@ -203,7 +203,7 @@ def edit_balance():
                             "Observação": "",
                             "Data": data_to_edit_str,
                             "MesAno": data_to_edit.strftime("%m/%Y"),
-                            "Inclusão": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                            "Inclusão": datetime.now(),
                             "Realizado": True,
                         }
                     ]
