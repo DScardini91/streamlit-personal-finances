@@ -1,18 +1,9 @@
 import streamlit as st
 import pandas as pd
-import json
 from datetime import datetime
 from modules.data_processing import calculate_balance
 
-
-# Função para carregar opções do arquivo JSON
-def load_options():
-    with open("modules/options.json", "r") as f:
-        options = json.load(f)
-    return options
-
-
-options = load_options()
+options = st.session_state.options
 
 
 def apply_balance_styles(df):
@@ -66,6 +57,10 @@ def view_data():
         "Classe",
         options=sum(options["classe_options"].values(), []),
     )
+    subclasses = st.multiselect(
+        "Subclasse",
+        options=sum(options["subclasse_options"].values(), []),
+    )
     origens = st.multiselect(
         "Origem",
         options=options["origem_options"]["Gasto"],
@@ -79,6 +74,8 @@ def view_data():
         df = df[df["Categoria"].isin(categorias)]
     if classes:
         df = df[df["Classe"].isin(classes)]
+    if subclasses:
+        df = df[df["Subclasse"].isin(subclasses)]
     if origens:
         df = df[df["Origem"].isin(origens)]
     if meses:
@@ -102,7 +99,7 @@ def view_data():
             index=linhas_para_deletar
         ).reset_index(drop=True)
         st.success("Linhas marcadas foram deletadas com sucesso!")
-        st.rerun()  # Atualiza a página para refletir as mudanças
+        st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
 
 def view_balance(key=""):
@@ -214,7 +211,7 @@ def edit_balance():
                 st.success(
                     f"Transação de ajuste de saldo criada: {nova_transacao['Tipo'].values[0]} de R$ {nova_transacao['Valor'].values[0]:.2f}"
                 )
-                st.rerun()  # Atualiza a página para refletir as mudanças
+                st.experimental_rerun()  # Atualiza a página para refletir as mudanças
             else:
                 st.error("Data não encontrada no balanço financeiro.")
 

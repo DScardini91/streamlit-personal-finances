@@ -1,18 +1,10 @@
 import streamlit as st
 import pandas as pd
-import json
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
-
-# Função para carregar opções do arquivo JSON
-def load_options():
-    with open("modules/options.json", "r") as f:
-        options = json.load(f)
-    return options
-
-
-options = load_options()
+# Carrega as opções do session_state
+options = st.session_state.options
 
 
 # Inicializa um DataFrame vazio se não existir
@@ -23,6 +15,7 @@ def initialize_df():
                 "Tipo",
                 "Categoria",
                 "Classe",
+                "Subclasse",
                 "Origem",
                 "Descrição",
                 "Valor",
@@ -33,6 +26,10 @@ def initialize_df():
                 "Realizado",
             ]
         )
+    else:
+        # Garante que a coluna 'Subclasse' esteja presente
+        if "Subclasse" not in st.session_state.df.columns:
+            st.session_state.df["Subclasse"] = ""
 
 
 # Inicializa inputs vazios
@@ -40,11 +37,12 @@ def initialize_inputs():
     st.session_state.inputs = {
         "tipo": "Gasto",
         "categoria": "Custos Fixos",
-        "classe": " ",
-        "origem": " ",
-        "descricao": " ",
+        "classe": "",
+        "subclasse": "",
+        "origem": "",
+        "descricao": "",
         "valor": 0.00,
-        "observacao": " ",
+        "observacao": "",
         "data_transacao": datetime.today().strftime("%d/%m/%Y"),
         "realizado": False,
         "recorrente": False,
@@ -84,6 +82,7 @@ def manual_entry():
     tipos = options["tipo_options"]
     categorias = options["categoria_options"].get(st.session_state.inputs["tipo"], [])
     classes = options["classe_options"].get(st.session_state.inputs["categoria"], [])
+    subclasses = options["subclasse_options"].get(st.session_state.inputs["classe"], [])
     origens = options["origem_options"].get(st.session_state.inputs["tipo"], [])
 
     col1, col2 = st.columns(2)
@@ -113,6 +112,18 @@ def manual_entry():
             index=(
                 classes.index(st.session_state.inputs["classe"])
                 if st.session_state.inputs["classe"] in classes
+                else 0
+            ),
+        )
+        subclasses = options["subclasse_options"].get(
+            st.session_state.inputs["classe"], []
+        )
+        st.session_state.inputs["subclasse"] = st.selectbox(
+            "Subclasse",
+            subclasses,
+            index=(
+                subclasses.index(st.session_state.inputs["subclasse"])
+                if st.session_state.inputs["subclasse"] in subclasses
                 else 0
             ),
         )
@@ -168,17 +179,17 @@ def manual_entry():
             )
 
     confirm_button = st.button(label="✅ Confirmar")
-    # correct_button = st.button(label="🧽 Corrigir")
 
     if confirm_button:
         valor = st.session_state.inputs["valor"]
-        data_hora_inclusao = datetime.now()  # .strftime("%d/%m/%Y %H:%M:%S")
+        data_hora_inclusao = datetime.now()
 
         # Verificar se a transação já existe
         transacao_existente = st.session_state.df[
             (st.session_state.df["Tipo"] == st.session_state.inputs["tipo"])
             & (st.session_state.df["Categoria"] == st.session_state.inputs["categoria"])
             & (st.session_state.df["Classe"] == st.session_state.inputs["classe"])
+            & (st.session_state.df["Subclasse"] == st.session_state.inputs["subclasse"])
             & (st.session_state.df["Origem"] == st.session_state.inputs["origem"])
             & (st.session_state.df["Descrição"] == st.session_state.inputs["descricao"])
             & (st.session_state.df["Valor"] == float(valor))
@@ -207,6 +218,7 @@ def manual_entry():
                         "Tipo": [st.session_state.inputs["tipo"]],
                         "Categoria": [st.session_state.inputs["categoria"]],
                         "Classe": [st.session_state.inputs["classe"]],
+                        "Subclasse": [st.session_state.inputs["subclasse"]],
                         "Origem": [st.session_state.inputs["origem"]],
                         "Descrição": [st.session_state.inputs["descricao"]],
                         "Valor": [float(valor)],
@@ -214,9 +226,7 @@ def manual_entry():
                         "Data": [data_transacao.strftime("%d/%m/%Y")],
                         "MesAno": [mes_ano],
                         "Inclusão": [data_hora_inclusao],
-                        "Realizado": [
-                            False
-                        ],  # Sempre False para transações recorrentes
+                        "Realizado": [False],
                     }
                 )
                 st.session_state.df = pd.concat(
@@ -233,6 +243,7 @@ def manual_entry():
                     "Tipo": [st.session_state.inputs["tipo"]],
                     "Categoria": [st.session_state.inputs["categoria"]],
                     "Classe": [st.session_state.inputs["classe"]],
+                    "Subclasse": [st.session_state.inputs["subclasse"]],
                     "Origem": [st.session_state.inputs["origem"]],
                     "Descrição": [st.session_state.inputs["descricao"]],
                     "Valor": [float(valor)],
@@ -247,7 +258,7 @@ def manual_entry():
                 [st.session_state.df, new_transaction], ignore_index=True
             )
             st.success(
-                f"Txransação adicionada com sucesso! Valor: R$ {valor}, Data: {data_transacao.strftime('%d/%m/%Y')}"
+                f"Transação adicionada com sucesso! Valor: R$ {valor}, Data: {data_transacao.strftime('%d/%m/%Y')}"
             )
 
         else:
