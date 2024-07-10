@@ -172,7 +172,7 @@ def manual_entry():
 
     if confirm_button:
         valor = st.session_state.inputs["valor"]
-        data_hora_inclusao = datetime.now()#.strftime("%d/%m/%Y %H:%M:%S")
+        data_hora_inclusao = datetime.now()  # .strftime("%d/%m/%Y %H:%M:%S")
 
         # Verificar se a transação já existe
         transacao_existente = st.session_state.df[
@@ -255,6 +255,7 @@ def manual_entry():
             print("Transação já existente. Não foi adicionada.")
 
         initialize_inputs()
+        st.rerun()
         ensure_date_format()
 
     with col2:
