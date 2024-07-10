@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import json
 from datetime import datetime, date
+from modules.options_handler import load_options, save_options
+
 
 def save_data(file_name):
     def convert_timestamps(data):
@@ -23,16 +25,17 @@ def save_data(file_name):
             if "cards_df" in st.session_state
             else {}
         ),
-        "goals": (st.session_state.goals if "goals" in st.session_state else {}),
+        "goals": st.session_state.goals if "goals" in st.session_state else {},
+        "options": st.session_state.options if "options" in st.session_state else {},
     }
 
-    # Convert timestamps to ISO format strings
     convert_timestamps(data)
 
     with open(file_name, "w") as f:
         json.dump(data, f)
     st.session_state.saved_file_name = file_name
     st.success(f"Dados salvos em {file_name}")
+
 
 def save_data_as():
     file_name = st.text_input("Digite o nome do arquivo (sem extensão):", key="save_as")
@@ -42,8 +45,10 @@ def save_data_as():
         else:
             st.warning("Por favor, insira um nome de arquivo.")
 
+
 def load_data(uploaded_file):
-    if not st.session_state.get('data_loaded', False):
+    if not st.session_state.get("data_loaded", False):
+
         def convert_strings_to_timestamps(data):
             for key, value in data.items():
                 if isinstance(value, dict):
@@ -81,7 +86,9 @@ def load_data(uploaded_file):
                 )
             if "Valor Previsto de Transações" in df.columns:
                 df["Valor Previsto de Transações"] = (
-                    df["Valor Previsto de Transações"].apply(clean_currency).astype(float)
+                    df["Valor Previsto de Transações"]
+                    .apply(clean_currency)
+                    .astype(float)
                 )
             if "Saldo Previsto" in df.columns:
                 df["Saldo Previsto"] = (
@@ -97,7 +104,9 @@ def load_data(uploaded_file):
 
         if "balance" in data:
             st.session_state.balance_df = pd.DataFrame(data["balance"])
-            st.session_state.balance_df = ensure_correct_format(st.session_state.balance_df)
+            st.session_state.balance_df = ensure_correct_format(
+                st.session_state.balance_df
+            )
         if "cards" in data:
             st.session_state.cards_df = pd.DataFrame(data["cards"])
         if "goals" in data:
@@ -112,8 +121,19 @@ def load_data(uploaded_file):
                 "Dízimo": 10,
                 "Reembolsável": 0,
             }
+        if "options" in data:
+            st.session_state.options = data["options"]
+        else:
+            st.session_state.options = load_options()
         st.session_state.data_loaded = True
         st.success("Dados carregados com sucesso")
+
+
+def initialize_session_state():
+    if "data_loaded" not in st.session_state:
+        st.session_state.options = load_options()
+        st.session_state.data_loaded = True
+
 
 def download_data():
     if "saved_file_name" in st.session_state:

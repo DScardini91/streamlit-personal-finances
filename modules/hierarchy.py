@@ -2,17 +2,19 @@ import streamlit as st
 import json
 
 
-# Função para carregar opções do arquivo JSON
 def load_options():
+    if "options" in st.session_state:
+        return st.session_state.options
     with open("modules/options.json", "r") as f:
         options = json.load(f)
+    st.session_state.options = options
     return options
 
 
-# Função para salvar opções no arquivo JSON
 def save_options(options):
     with open("modules/options.json", "w") as f:
         json.dump(options, f, indent=4)
+    st.session_state.options = options
 
 
 def add_class_to_category(tipo, category, new_class):
@@ -35,8 +37,30 @@ def remove_class_from_category(tipo, category, class_to_remove):
     return False
 
 
+def add_subclass_to_class(tipo, category, classe, new_subclass):
+    options = load_options()
+    if category in options["categoria_options"].get(tipo, []):
+        if classe in options["classe_options"].get(category, []):
+            if new_subclass not in options["subclasse_options"].get(classe, []):
+                options["subclasse_options"].setdefault(classe, []).append(new_subclass)
+                save_options(options)
+                return True
+    return False
+
+
+def remove_subclass_from_class(tipo, category, classe, subclass_to_remove):
+    options = load_options()
+    if category in options["categoria_options"].get(tipo, []):
+        if classe in options["classe_options"].get(category, []):
+            if subclass_to_remove in options["subclasse_options"].get(classe, []):
+                options["subclasse_options"][classe].remove(subclass_to_remove)
+                save_options(options)
+                return True
+    return False
+
+
 def show_classes(options):
-    st.write("### Hierarquia de Categorias e Classes")
+    st.write("### Hierarquia de Categorias, Classes e Subclasses")
     st.markdown(
         """
         <style>
@@ -57,10 +81,16 @@ def show_classes(options):
                 st.markdown(
                     f"<p class='small-font'>- {classe}</p>", unsafe_allow_html=True
                 )
+                subclasses = options["subclasse_options"].get(classe, [])
+                for subclass in subclasses:
+                    st.markdown(
+                        f"<p class='small-font' style='margin-left: 20px;'>-- {subclass}</p>",
+                        unsafe_allow_html=True,
+                    )
 
 
 def manage_hierarchy():
-    st.subheader("Gerenciar Hierarquia de Categorias e Classes")
+    st.subheader("Gerenciar Hierarquia de Categorias, Classes e Subclasses")
 
     col1, col2 = st.columns(2)
 
@@ -71,8 +101,20 @@ def manage_hierarchy():
             "Selecione a Categoria",
             options["categoria_options"].get(tipo_selecionado, []),
         )
+        classe_selecionada = st.selectbox(
+            "Selecione a Classe",
+            options["classe_options"].get(categoria_selecionada, []),
+        )
 
-        acao = st.radio("Ação", ("Adicionar Classe", "Remover Classe"))
+        acao = st.radio(
+            "Ação",
+            (
+                "Adicionar Classe",
+                "Remover Classe",
+                "Adicionar Subclasse",
+                "Remover Subclasse",
+            ),
+        )
 
         if acao == "Adicionar Classe":
             nova_classe = st.text_input("Digite a nova Classe")
@@ -89,7 +131,7 @@ def manage_hierarchy():
                         "Erro ao adicionar a classe. Verifique se a categoria existe e tente novamente."
                     )
 
-                st.rerun()
+                st.experimental_rerun()
 
         elif acao == "Remover Classe":
             classes_existentes = options["classe_options"].get(
@@ -109,6 +151,49 @@ def manage_hierarchy():
                 else:
                     st.error(
                         "Erro ao remover a classe. Verifique se a classe e a categoria existem e tente novamente."
+                    )
+
+        elif acao == "Adicionar Subclasse":
+            nova_subclasse = st.text_input("Digite a nova Subclasse")
+
+            if st.button("Adicionar Subclasse"):
+                if add_subclass_to_class(
+                    tipo_selecionado,
+                    categoria_selecionada,
+                    classe_selecionada,
+                    nova_subclasse,
+                ):
+                    st.success(
+                        f"Subclasse '{nova_subclasse}' adicionada à classe '{classe_selecionada}' com sucesso."
+                    )
+                else:
+                    st.error(
+                        "Erro ao adicionar a subclasse. Verifique se a classe existe e tente novamente."
+                    )
+
+                st.experimental_rerun()
+
+        elif acao == "Remover Subclasse":
+            subclasses_existentes = options["subclasse_options"].get(
+                classe_selecionada, []
+            )
+            subclasse_selecionada = st.selectbox(
+                "Selecione a Subclasse para remover", subclasses_existentes
+            )
+
+            if st.button("Remover Subclasse"):
+                if remove_subclass_from_class(
+                    tipo_selecionado,
+                    categoria_selecionada,
+                    classe_selecionada,
+                    subclasse_selecionada,
+                ):
+                    st.success(
+                        f"Subclasse '{subclasse_selecionada}' removida da classe '{classe_selecionada}' com sucesso."
+                    )
+                else:
+                    st.error(
+                        "Erro ao remover a subclasse. Verifique se a subclasse existe e tente novamente."
                     )
 
     with col2:

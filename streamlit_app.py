@@ -1,4 +1,7 @@
 import streamlit as st
+
+
+from modules.options_handler import load_options
 from modules import data_processing as dp
 from modules import data_visualization as dv
 from modules import file_handling as fh
@@ -9,13 +12,17 @@ from modules import home as hm  # Importar o novo módulo home
 from modules import goals as gl  # Importar o novo módulo goals
 from modules import dashboard as ds
 
-# Configuração do tema personalizado para Streamlit
+# Configuração do tema personalizado para Streamlit deve ser a primeira coisa no script
 st.set_page_config(
     page_title="Aplicação de Finanças Pessoais",
     page_icon="💰",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Inicializa o session_state para as opções
+if "options" not in st.session_state:
+    st.session_state.options = load_options()
 
 # Adicione este trecho de CSS no início do arquivo streamlit_app.py para um tema escuro e acessível
 st.markdown(
