@@ -1,10 +1,13 @@
 import streamlit as st
 
+
+from modules.options_handler import load_options
+
 # Inicializa o session_state para as opções
 if "options" not in st.session_state:
     st.session_state.options = load_options()
 
-from modules.options_handler import load_options
+
 from modules import data_processing as dp
 from modules import data_visualization as dv
 from modules import file_handling as fh
