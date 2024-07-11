@@ -1,5 +1,8 @@
 import streamlit as st
 
+# Inicializa o session_state para as opções
+if "options" not in st.session_state:
+    st.session_state.options = load_options()
 
 from modules.options_handler import load_options
 from modules import data_processing as dp
@@ -20,9 +23,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Inicializa o session_state para as opções
-if "options" not in st.session_state:
-    st.session_state.options = load_options()
 
 # Adicione este trecho de CSS no início do arquivo streamlit_app.py para um tema escuro e acessível
 st.markdown(
