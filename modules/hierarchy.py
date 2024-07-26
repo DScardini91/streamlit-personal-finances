@@ -1,62 +1,5 @@
 import streamlit as st
-import json
-
-
-def load_options():
-    if "options" in st.session_state:
-        return st.session_state.options
-    with open("modules/options.json", "r") as f:
-        options = json.load(f)
-    st.session_state.options = options
-    return options
-
-
-def save_options(options):
-    with open("modules/options.json", "w") as f:
-        json.dump(options, f, indent=4)
-    st.session_state.options = options
-
-
-def add_class_to_category(tipo, category, new_class):
-    options = load_options()
-    if category in options["categoria_options"].get(tipo, []):
-        if new_class not in options["classe_options"].get(category, []):
-            options["classe_options"].setdefault(category, []).append(new_class)
-            save_options(options)
-            return True
-    return False
-
-
-def remove_class_from_category(tipo, category, class_to_remove):
-    options = load_options()
-    if category in options["categoria_options"].get(tipo, []):
-        if class_to_remove in options["classe_options"].get(category, []):
-            options["classe_options"][category].remove(class_to_remove)
-            save_options(options)
-            return True
-    return False
-
-
-def add_subclass_to_class(tipo, category, classe, new_subclass):
-    options = load_options()
-    if category in options["categoria_options"].get(tipo, []):
-        if classe in options["classe_options"].get(category, []):
-            if new_subclass not in options["subclasse_options"].get(classe, []):
-                options["subclasse_options"].setdefault(classe, []).append(new_subclass)
-                save_options(options)
-                return True
-    return False
-
-
-def remove_subclass_from_class(tipo, category, classe, subclass_to_remove):
-    options = load_options()
-    if category in options["categoria_options"].get(tipo, []):
-        if classe in options["classe_options"].get(category, []):
-            if subclass_to_remove in options["subclasse_options"].get(classe, []):
-                options["subclasse_options"][classe].remove(subclass_to_remove)
-                save_options(options)
-                return True
-    return False
+from modules.options_handler import load_options, save_options
 
 
 def show_classes(options):
@@ -75,16 +18,17 @@ def show_classes(options):
     for tipo, categorias in options["categoria_options"].items():
         st.markdown(f"**{tipo}**", unsafe_allow_html=True)
         for categoria in categorias:
-            st.markdown(f"**{categoria}**", unsafe_allow_html=True)
+            st.markdown(f"&emsp;**{categoria}**", unsafe_allow_html=True)
             classes = options["classe_options"].get(categoria, [])
             for classe in classes:
                 st.markdown(
-                    f"<p class='small-font'>- {classe}</p>", unsafe_allow_html=True
+                    f"&emsp;&emsp;<p class='small-font'>- {classe}</p>",
+                    unsafe_allow_html=True,
                 )
                 subclasses = options["subclasse_options"].get(classe, [])
                 for subclass in subclasses:
                     st.markdown(
-                        f"<p class='small-font' style='margin-left: 20px;'>-- {subclass}</p>",
+                        f"&emsp;&emsp;&emsp;<p class='small-font'>-- {subclass}</p>",
                         unsafe_allow_html=True,
                     )
 
@@ -101,10 +45,6 @@ def manage_hierarchy():
             "Selecione a Categoria",
             options["categoria_options"].get(tipo_selecionado, []),
         )
-        classe_selecionada = st.selectbox(
-            "Selecione a Classe",
-            options["classe_options"].get(categoria_selecionada, []),
-        )
 
         acao = st.radio(
             "Ação",
@@ -115,6 +55,12 @@ def manage_hierarchy():
                 "Remover Subclasse",
             ),
         )
+
+        if acao in ["Adicionar Subclasse", "Remover Subclasse"]:
+            classe_selecionada = st.selectbox(
+                "Selecione a Classe",
+                options["classe_options"].get(categoria_selecionada, []),
+            )
 
         if acao == "Adicionar Classe":
             nova_classe = st.text_input("Digite a nova Classe")
@@ -198,6 +144,9 @@ def manage_hierarchy():
 
     with col2:
         show_classes(options)
+
+    # Atualiza o session_state com as opções modificadas
+    st.session_state.options = options
 
 
 if __name__ == "__main__":
