@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+from modules.options_handler import load_options
 
-# Carrega as opções do session_state
-options = st.session_state.options
+options = load_options()
 
 
 # Inicializa um DataFrame vazio se não existir
@@ -72,6 +72,8 @@ def ensure_date_format():
 
 # Adicione a chamada para a função ensure_date_format onde necessário
 def manual_entry():
+    # Carrega as opções do session_state
+    options = load_options()
     st.subheader("Adicionar transação")
 
     initialize_df()
@@ -266,7 +268,7 @@ def manual_entry():
             print("Transação já existente. Não foi adicionada.")
 
         initialize_inputs()
-        st.rerun()
+        st.experimental_rerun()
         ensure_date_format()
 
     with col2:

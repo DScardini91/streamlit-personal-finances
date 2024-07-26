@@ -10,50 +10,50 @@
             "Conforto",
             "Conhecimento",
             "Liberdade Financeira",
-            "Dízimo",
-            "Reembolsável"
+            "D\u00edzimo",
+            "Reembols\u00e1vel"
         ],
         "Receita": [
-            "Salário Daniel",
-            "Salário Larissa",
+            "Sal\u00e1rio Daniel",
+            "Sal\u00e1rio Larissa",
             "Reembolso Janta",
             "Reembolso Plano",
-            "Bônus"
+            "B\u00f4nus"
         ]
     },
     "classe_options": {
         "Custos fixos": [
             "Mensalidade Creche Isaque",
-            "Ração",
+            "Ra\u00e7\u00e3o",
             "Vacina",
             "Medicamento",
-            "Tarifas bancárias",
+            "Tarifas banc\u00e1rias",
             "Supermercado",
-            "Aluguel / Condomínio / IPTU",
-            "Energia Elétrica",
+            "Aluguel / Condom\u00ednio / IPTU",
+            "Energia El\u00e9trica",
             "Internet",
-            "Manutenção",
-            "Condomínio",
+            "Manuten\u00e7\u00e3o",
+            "Condom\u00ednio",
             "Financiamento APTO",
             "Celular",
             "Cabelereiro / Barbeiro",
-            "Combustível",
+            "Combust\u00edvel",
             "Estacionamento",
             "IPVA",
             "Lavagem",
             "Licenciamento",
             "Multa",
-            "Ônibus / Metrô",
+            "\u00d4nibus / Metr\u00f4",
             "Outros",
-            "Pedágio",
+            "Ped\u00e1gio",
             "Seguro",
             "Taxi / Uber",
-            "Consultas médicas",
-            "Consultas odontológicas",
-            "Farmácia",
+            "Consultas m\u00e9dicas",
+            "Consultas odontol\u00f3gicas",
+            "Farm\u00e1cia",
             "Fraldas",
             "Vacinas",
-            "Alimentação Trabalho Daniel",
+            "Alimenta\u00e7\u00e3o Trabalho Daniel",
             "Padaria",
             "Material escolar"
         ],
@@ -65,10 +65,10 @@
         ],
         "Conforto": [
             "Streaming (Netflix / Amazon / Disney)",
-            "Auxiliar doméstica",
+            "Auxiliar dom\u00e9stica",
             "Manicure",
             "Lavanderia",
-            "Alimentação Trabalho Larissa"
+            "Alimenta\u00e7\u00e3o Trabalho Larissa"
         ],
         "Conhecimento": [
             "Cursos",
@@ -79,22 +79,22 @@
         "Liberdade Financeira": [
             "Investimento"
         ],
-        "Dízimo": [
-            "Dízimo",
+        "D\u00edzimo": [
+            "D\u00edzimo",
             "Oferta"
         ],
-        "Reembolsável": [
-            "Saúde",
-            "Alimentação",
-            "Combustível",
+        "Reembols\u00e1vel": [
+            "Sa\u00fade",
+            "Alimenta\u00e7\u00e3o",
+            "Combust\u00edvel",
             "Estacionamento",
             "Cursos / Livros"
         ],
-        "Salário Daniel": [
-            "Salário Daniel"
+        "Sal\u00e1rio Daniel": [
+            "Sal\u00e1rio Daniel"
         ],
-        "Salário Larissa": [
-            "Salário Larissa"
+        "Sal\u00e1rio Larissa": [
+            "Sal\u00e1rio Larissa"
         ],
         "Reembolso Janta": [
             "Reembolso Janta"
@@ -102,70 +102,87 @@
         "Reembolso Plano": [
             "Reembolso Plano"
         ],
-        "Bônus": [
-            "Bônus"
+        "B\u00f4nus": [
+            "B\u00f4nus"
         ]
     },
     "subclasse_options": {
         "Mensalidade Creche Isaque": [],
-        "Ração": [],
+        "Ra\u00e7\u00e3o": [],
         "Vacina": [],
         "Medicamento": [],
-        "Tarifas bancárias": [],
+        "Tarifas banc\u00e1rias": [],
         "Supermercado": [],
-        "Aluguel / Condomínio / IPTU": ["Aluguel", "Condomínio", "IPTU"],
-        "Energia Elétrica": ["Luz", "Gás"],
+        "Aluguel / Condom\u00ednio / IPTU": [
+            "Aluguel",
+            "Condom\u00ednio",
+            "IPTU"
+        ],
+        "Energia El\u00e9trica": [
+            "Luz",
+            "G\u00e1s"
+        ],
         "Internet": [],
-        "Manutenção": ["Reparos", "Limpeza"],
-        "Condomínio": [],
+        "Manuten\u00e7\u00e3o": [
+            "Reparos",
+            "Limpeza"
+        ],
+        "Condom\u00ednio": [],
         "Financiamento APTO": [],
         "Celular": [],
         "Cabelereiro / Barbeiro": [],
-        "Combustível": [],
+        "Combust\u00edvel": [],
         "Estacionamento": [],
         "IPVA": [],
         "Lavagem": [],
         "Licenciamento": [],
         "Multa": [],
-        "Ônibus / Metrô": [],
+        "\u00d4nibus / Metr\u00f4": [],
         "Outros": [],
-        "Pedágio": [],
+        "Ped\u00e1gio": [],
         "Seguro": [],
         "Taxi / Uber": [],
-        "Consultas médicas": [],
-        "Consultas odontológicas": [],
-        "Farmácia": [],
+        "Consultas m\u00e9dicas": [],
+        "Consultas odontol\u00f3gicas": [],
+        "Farm\u00e1cia": [],
         "Fraldas": [],
         "Vacinas": [],
-        "Alimentação Trabalho Daniel": [],
+        "Alimenta\u00e7\u00e3o Trabalho Daniel": [],
         "Padaria": [],
         "Material escolar": [],
-        "Passeios": ["Parques", "Museus"],
-        "Restaurantes / Cafeterias": ["Jantar", "Café"],
+        "Passeios": [
+            "Parques",
+            "Museus"
+        ],
+        "Restaurantes / Cafeterias": [
+            "Jantar",
+            "Caf\u00e9"
+        ],
         "Esporte": [],
         "Cinema / Teatro": [],
         "Streaming (Netflix / Amazon / Disney)": [],
-        "Auxiliar doméstica": ["Salário", "Benefícios"],
+        "Auxiliar dom\u00e9stica": [
+            "Sal\u00e1rio",
+            "Benef\u00edcios"
+        ],
         "Manicure": [],
         "Lavanderia": [],
-        "Alimentação Trabalho Larissa": [],
+        "Alimenta\u00e7\u00e3o Trabalho Larissa": [],
         "Cursos": [],
         "Livros": [],
         "Palestras / Workshops": [],
         "Brinquedos educativos": [],
         "Investimento": [],
-        "Dízimo": [],
+        "D\u00edzimo": [],
         "Oferta": [],
-        "Saúde": [],
-        "Alimentação": [],
-        "Combustível": [],
-        "Estacionamento": [],
+        "Sa\u00fade": [],
+        "Alimenta\u00e7\u00e3o": [],
         "Cursos / Livros": [],
-        "Salário Daniel": [],
-        "Salário Larissa": [],
+        "Sal\u00e1rio Daniel": [],
+        "Sal\u00e1rio Larissa": [],
         "Reembolso Janta": [],
         "Reembolso Plano": [],
-        "Bônus": []
+        "B\u00f4nus": []
     },
     "origem_options": {
         "Gasto": [
