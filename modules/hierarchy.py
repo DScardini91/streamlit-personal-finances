@@ -33,6 +33,52 @@ def show_classes(options):
                     )
 
 
+def add_class_to_category(tipo, category, new_class):
+    options = load_options()
+    if category in options["categoria_options"].get(tipo, []):
+        if new_class not in options["classe_options"].get(category, []):
+            options["classe_options"].setdefault(category, []).append(new_class)
+            save_options(options)
+            st.session_state.options = options  # Atualiza o session_state
+            return True
+    return False
+
+
+def remove_class_from_category(tipo, category, class_to_remove):
+    options = load_options()
+    if category in options["categoria_options"].get(tipo, []):
+        if class_to_remove in options["classe_options"].get(category, []):
+            options["classe_options"][category].remove(class_to_remove)
+            save_options(options)
+            st.session_state.options = options  # Atualiza o session_state
+            return True
+    return False
+
+
+def add_subclass_to_class(tipo, category, classe, new_subclass):
+    options = load_options()
+    if category in options["categoria_options"].get(tipo, []):
+        if classe in options["classe_options"].get(category, []):
+            if new_subclass not in options["subclasse_options"].get(classe, []):
+                options["subclasse_options"].setdefault(classe, []).append(new_subclass)
+                save_options(options)
+                st.session_state.options = options  # Atualiza o session_state
+                return True
+    return False
+
+
+def remove_subclass_from_class(tipo, category, classe, subclass_to_remove):
+    options = load_options()
+    if category in options["categoria_options"].get(tipo, []):
+        if classe in options["classe_options"].get(category, []):
+            if subclass_to_remove in options["subclasse_options"].get(classe, []):
+                options["subclasse_options"][classe].remove(subclass_to_remove)
+                save_options(options)
+                st.session_state.options = options  # Atualiza o session_state
+                return True
+    return False
+
+
 def manage_hierarchy():
     st.subheader("Gerenciar Hierarquia de Categorias, Classes e Subclasses")
 
