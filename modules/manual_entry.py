@@ -268,7 +268,7 @@ def manual_entry():
             print("Transação já existente. Não foi adicionada.")
 
         initialize_inputs()
-        st.experimental_rerun()
+        st.rerun()
         ensure_date_format()
 
     with col2:

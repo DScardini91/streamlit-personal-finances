@@ -123,7 +123,7 @@ def manage_hierarchy():
                         "Erro ao adicionar a classe. Verifique se a categoria existe e tente novamente."
                     )
 
-                st.experimental_rerun()
+                st.rerun()
 
         elif acao == "Remover Classe":
             classes_existentes = options["classe_options"].get(
@@ -163,7 +163,7 @@ def manage_hierarchy():
                         "Erro ao adicionar a subclasse. Verifique se a classe existe e tente novamente."
                     )
 
-                st.experimental_rerun()
+                st.rerun()
 
         elif acao == "Remover Subclasse":
             subclasses_existentes = options["subclasse_options"].get(
