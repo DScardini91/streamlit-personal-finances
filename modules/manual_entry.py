@@ -41,7 +41,7 @@ def initialize_inputs():
         "subclasse": "",
         "origem": "",
         "descricao": "",
-        "valor": 0.00,
+        "valor": "0,00",
         "observacao": "",
         "data_transacao": datetime.today().strftime("%d/%m/%Y"),
         "realizado": False,
@@ -143,13 +143,15 @@ def manual_entry():
         st.session_state.inputs["descricao"] = st.text_input(
             "Descrição", st.session_state.inputs["descricao"]
         )
-        st.session_state.inputs["valor"] = st.number_input(
-            "Valor (R$)",
-            min_value=0.00,
-            format="%.2f",
-            value=float(st.session_state.inputs["valor"]),
-            step=0.01,
-        )
+
+        valor_input = st.text_input("Valor (R$)", st.session_state.inputs["valor"])
+        # Permite ponto ou vírgula para decimais
+        if not valor_input.replace(".", "", 1).replace(",", "", 1).isdigit():
+            st.warning("Por favor, insira apenas números no campo Valor.")
+        else:
+            # Substitui vírgula por ponto para garantir consistência no formato decimal
+            st.session_state.inputs["valor"] = valor_input.replace(",", ".")
+
         st.session_state.inputs["observacao"] = st.text_input(
             "Observação", st.session_state.inputs["observacao"]
         )
@@ -183,37 +185,74 @@ def manual_entry():
     confirm_button = st.button(label="✅ Confirmar")
 
     if confirm_button:
-        valor = st.session_state.inputs["valor"]
-        data_hora_inclusao = datetime.now()
+        if not valor_input.replace(".", "", 1).replace(",", "", 1).isdigit():
+            st.warning("Por favor, insira um valor numérico válido.")
+        else:
+            valor = float(st.session_state.inputs["valor"])
+            data_hora_inclusao = datetime.now()
 
-        # Verificar se a transação já existe
-        transacao_existente = st.session_state.df[
-            (st.session_state.df["Tipo"] == st.session_state.inputs["tipo"])
-            & (st.session_state.df["Categoria"] == st.session_state.inputs["categoria"])
-            & (st.session_state.df["Classe"] == st.session_state.inputs["classe"])
-            & (st.session_state.df["Subclasse"] == st.session_state.inputs["subclasse"])
-            & (st.session_state.df["Origem"] == st.session_state.inputs["origem"])
-            & (st.session_state.df["Descrição"] == st.session_state.inputs["descricao"])
-            & (st.session_state.df["Valor"] == float(valor))
-            & (
-                st.session_state.df["Observação"]
-                == st.session_state.inputs["observacao"]
-            )
-            & (
-                st.session_state.df["Data"]
-                == st.session_state.inputs["data_transacao"].strftime("%d/%m/%Y")
-            )
-        ]
+            # Verificar se a transação já existe
+            transacao_existente = st.session_state.df[
+                (st.session_state.df["Tipo"] == st.session_state.inputs["tipo"])
+                & (
+                    st.session_state.df["Categoria"]
+                    == st.session_state.inputs["categoria"]
+                )
+                & (st.session_state.df["Classe"] == st.session_state.inputs["classe"])
+                & (
+                    st.session_state.df["Subclasse"]
+                    == st.session_state.inputs["subclasse"]
+                )
+                & (st.session_state.df["Origem"] == st.session_state.inputs["origem"])
+                & (
+                    st.session_state.df["Descrição"]
+                    == st.session_state.inputs["descricao"]
+                )
+                & (st.session_state.df["Valor"] == valor)
+                & (
+                    st.session_state.df["Observação"]
+                    == st.session_state.inputs["observacao"]
+                )
+                & (
+                    st.session_state.df["Data"]
+                    == st.session_state.inputs["data_transacao"].strftime("%d/%m/%Y")
+                )
+            ]
 
-        if st.session_state.inputs["recorrente"] and transacao_existente.empty:
-            for i in range(
-                0,
-                st.session_state.inputs["duracao"],
-                st.session_state.inputs["periodicidade"],
-            ):
-                data_transacao = st.session_state.inputs[
-                    "data_transacao"
-                ] + relativedelta(months=i)
+            if st.session_state.inputs["recorrente"] and transacao_existente.empty:
+                for i in range(
+                    0,
+                    st.session_state.inputs["duracao"],
+                    st.session_state.inputs["periodicidade"],
+                ):
+                    data_transacao = st.session_state.inputs[
+                        "data_transacao"
+                    ] + relativedelta(months=i)
+                    mes_ano = data_transacao.strftime("%m/%Y")
+                    new_transaction = pd.DataFrame(
+                        {
+                            "Tipo": [st.session_state.inputs["tipo"]],
+                            "Categoria": [st.session_state.inputs["categoria"]],
+                            "Classe": [st.session_state.inputs["classe"]],
+                            "Subclasse": [st.session_state.inputs["subclasse"]],
+                            "Origem": [st.session_state.inputs["origem"]],
+                            "Descrição": [st.session_state.inputs["descricao"]],
+                            "Valor": [valor],
+                            "Observação": [st.session_state.inputs["observacao"]],
+                            "Data": [data_transacao.strftime("%d/%m/%Y")],
+                            "MesAno": [mes_ano],
+                            "Inclusão": [data_hora_inclusao],
+                            "Realizado": [False],
+                        }
+                    )
+                    st.session_state.df = pd.concat(
+                        [st.session_state.df, new_transaction], ignore_index=True
+                    )
+                    st.success(
+                        f"Transação recorrente adicionada com sucesso! Foram adicionadas {st.session_state.inputs['duracao'] // st.session_state.inputs['periodicidade']} recorrências, no valor total de R$ {st.session_state.inputs['valor'] * (st.session_state.inputs['duracao'] // st.session_state.inputs['periodicidade'])}"
+                    )
+            elif transacao_existente.empty:
+                data_transacao = st.session_state.inputs["data_transacao"]
                 mes_ano = data_transacao.strftime("%m/%Y")
                 new_transaction = pd.DataFrame(
                     {
@@ -223,53 +262,28 @@ def manual_entry():
                         "Subclasse": [st.session_state.inputs["subclasse"]],
                         "Origem": [st.session_state.inputs["origem"]],
                         "Descrição": [st.session_state.inputs["descricao"]],
-                        "Valor": [float(valor)],
+                        "Valor": [valor],
                         "Observação": [st.session_state.inputs["observacao"]],
                         "Data": [data_transacao.strftime("%d/%m/%Y")],
                         "MesAno": [mes_ano],
                         "Inclusão": [data_hora_inclusao],
-                        "Realizado": [False],
+                        "Realizado": [st.session_state.inputs["realizado"]],
                     }
                 )
                 st.session_state.df = pd.concat(
                     [st.session_state.df, new_transaction], ignore_index=True
                 )
                 st.success(
-                    f"Transação recorrente adicionada com sucesso! Foram adicionadas {st.session_state.inputs['duracao'] // st.session_state.inputs['periodicidade']} recorrências, no valor total de R$ {st.session_state.inputs['valor'] * (st.session_state.inputs['duracao'] // st.session_state.inputs['periodicidade'])}"
+                    f"Transação adicionada com sucesso! Valor: R$ {valor}, Data: {data_transacao.strftime('%d/%m/%Y')}"
                 )
-        elif transacao_existente.empty:
-            data_transacao = st.session_state.inputs["data_transacao"]
-            mes_ano = data_transacao.strftime("%m/%Y")
-            new_transaction = pd.DataFrame(
-                {
-                    "Tipo": [st.session_state.inputs["tipo"]],
-                    "Categoria": [st.session_state.inputs["categoria"]],
-                    "Classe": [st.session_state.inputs["classe"]],
-                    "Subclasse": [st.session_state.inputs["subclasse"]],
-                    "Origem": [st.session_state.inputs["origem"]],
-                    "Descrição": [st.session_state.inputs["descricao"]],
-                    "Valor": [float(valor)],
-                    "Observação": [st.session_state.inputs["observacao"]],
-                    "Data": [data_transacao.strftime("%d/%m/%Y")],
-                    "MesAno": [mes_ano],
-                    "Inclusão": [data_hora_inclusao],
-                    "Realizado": [st.session_state.inputs["realizado"]],
-                }
-            )
-            st.session_state.df = pd.concat(
-                [st.session_state.df, new_transaction], ignore_index=True
-            )
-            st.success(
-                f"Transação adicionada com sucesso! Valor: R$ {valor}, Data: {data_transacao.strftime('%d/%m/%Y')}"
-            )
 
-        else:
-            st.warning("Já existe uma transação idêntica lançada.")
-            print("Transação já existente. Não foi adicionada.")
+            else:
+                st.warning("Já existe uma transação idêntica lançada.")
+                print("Transação já existente. Não foi adicionada.")
 
-        initialize_inputs()
-        st.rerun()
-        ensure_date_format()
+            initialize_inputs()
+            st.experimental_rerun()
+            ensure_date_format()
 
     with col2:
         st.write("Transações Registradas:")
