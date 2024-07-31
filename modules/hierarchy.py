@@ -1,36 +1,36 @@
 import streamlit as st
 from modules.options_handler import load_options, save_options
+import pandas as pd
 
 
-def show_classes(options):
+def show_classes(options, selected_categorias, selected_classes, selected_subclasses):
     st.write("### Hierarquia de Categorias, Classes e Subclasses")
-    st.markdown(
-        """
-        <style>
-        .small-font {
-            font-size: 10px;
-            line-height: 0.4;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+
+    data = []
     for tipo, categorias in options["categoria_options"].items():
-        st.markdown(f"**{tipo}**", unsafe_allow_html=True)
         for categoria in categorias:
-            st.markdown(f"&emsp;**{categoria}**", unsafe_allow_html=True)
+            if selected_categorias and categoria not in selected_categorias:
+                continue
             classes = options["classe_options"].get(categoria, [])
             for classe in classes:
-                st.markdown(
-                    f"&emsp;&emsp;<p class='small-font'>- {classe}</p>",
-                    unsafe_allow_html=True,
-                )
+                if selected_classes and classe not in selected_classes:
+                    continue
                 subclasses = options["subclasse_options"].get(classe, [])
-                for subclass in subclasses:
-                    st.markdown(
-                        f"&emsp;&emsp;&emsp;<p class='small-font'>-- {subclass}</p>",
-                        unsafe_allow_html=True,
-                    )
+                if subclasses:
+                    for subclass in subclasses:
+                        if selected_subclasses and subclass not in selected_subclasses:
+                            continue
+                        data.append([tipo, categoria, classe, subclass])
+                else:
+                    data.append([tipo, categoria, classe, ""])
+
+    df = pd.DataFrame(data, columns=["Tipo", "Categoria", "Classe", "Subclasse"])
+    st.dataframe(
+        df[["Tipo", "Categoria", "Classe", "Subclasse"]],
+        use_container_width=True,
+        hide_index=True,
+        height=600,
+    )
 
 
 def add_class_to_category(tipo, category, new_class):
@@ -82,7 +82,7 @@ def remove_subclass_from_class(tipo, category, classe, subclass_to_remove):
 def manage_hierarchy():
     st.subheader("Gerenciar Hierarquia de Categorias, Classes e Subclasses")
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])  # Coluna 1 com 33% e Coluna 2 com 67% do espaço
 
     with col1:
         options = load_options()
@@ -188,8 +188,23 @@ def manage_hierarchy():
                         "Erro ao remover a subclasse. Verifique se a subclasse existe e tente novamente."
                     )
 
+        categorias_multiselect = st.multiselect(
+            "Filtrar por Categoria",
+            options=options["categoria_options"].get(tipo_selecionado, []),
+        )
+        classes_multiselect = st.multiselect(
+            "Filtrar por Classe", options=sum(options["classe_options"].values(), [])
+        )
+        subclasses_multiselect = st.multiselect(
+            "Filtrar por Subclasse",
+            options=sum(options["subclasse_options"].values(), []),
+        )
+
     with col2:
-        show_classes(options)
+
+        show_classes(
+            options, categorias_multiselect, classes_multiselect, subclasses_multiselect
+        )
 
     # Atualiza o session_state com as opções modificadas
     st.session_state.options = options
