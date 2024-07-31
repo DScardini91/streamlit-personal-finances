@@ -87,7 +87,7 @@ def manual_entry():
     subclasses = options["subclasse_options"].get(st.session_state.inputs["classe"], [])
     origens = options["origem_options"].get(st.session_state.inputs["tipo"], [])
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
 
     with col1:
         st.session_state.inputs["tipo"] = st.selectbox(
@@ -282,7 +282,7 @@ def manual_entry():
                 print("Transação já existente. Não foi adicionada.")
 
             initialize_inputs()
-            st.experimental_rerun()
+            st.rerun()
             ensure_date_format()
 
     with col2:
