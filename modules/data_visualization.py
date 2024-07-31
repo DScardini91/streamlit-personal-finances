@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from modules.data_processing import calculate_balance
+from modules import manual_entry as me
 
 options = st.session_state.options
 
@@ -43,7 +44,7 @@ def view_data():
     df = st.session_state.df.copy()
 
     df["Data"] = pd.to_datetime(df["Data"], format="%d/%m/%Y").dt.strftime("%d/%m/%Y")
-    df["MesAno"] = pd.to_datetime(df["MesAno"], format="%m/%Y").dt.strftime("%Y/%m")
+    df["MesAno"] = pd.to_datetime(df["MesAno"], format="%m/%Y").dt.strftime("%m/%Y")
 
     tipos = st.multiselect(
         "Tipo",
@@ -89,6 +90,7 @@ def view_data():
     # Adicionando coluna booleana para selecionar linhas a serem deletadas
     df["Deletar"] = False
     edited_df = st.data_editor(df, key="data_editor")
+    st.session_state.df = edited_df
 
     # Verificando linhas marcadas para deletar
     linhas_para_deletar = edited_df[edited_df["Deletar"]].index
@@ -99,7 +101,7 @@ def view_data():
             index=linhas_para_deletar
         ).reset_index(drop=True)
         st.success("Linhas marcadas foram deletadas com sucesso!")
-        st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+        st.rerun()  # Atualiza a página para refletir as mudanças
 
 
 def view_balance(key=""):
@@ -211,7 +213,7 @@ def edit_balance():
                 st.success(
                     f"Transação de ajuste de saldo criada: {nova_transacao['Tipo'].values[0]} de R$ {nova_transacao['Valor'].values[0]:.2f}"
                 )
-                st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+                st.rerun()  # Atualiza a página para refletir as mudanças
             else:
                 st.error("Data não encontrada no balanço financeiro.")
 
